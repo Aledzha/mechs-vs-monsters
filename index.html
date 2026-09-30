@@ -1296,6 +1296,8 @@ const Sound = {
     };
     window.addEventListener('pointerdown', unlock); window.addEventListener('keydown', unlock);
     Bus.on('adOpen', () => this.setMuted(true)); Bus.on('adClose', () => this.setMuted(document.hidden));
+    // пауза от платформы (game_api_pause / поворот телефона вертикально) — звук тоже выключаем
+    Bus.on('sdkPause', () => this.setMuted(true)); Bus.on('sdkResume', () => this.setMuted(document.hidden || Sdk.adOpen));
     document.addEventListener('visibilitychange', () => this.setMuted(document.hidden || Sdk.adOpen));
   },
   applyVolumes() {
@@ -4228,7 +4230,7 @@ window.addEventListener('contextmenu', e => e.preventDefault());
   const mq = window.matchMedia && window.matchMedia('(orientation: portrait) and (pointer: coarse)'); if (!mq) return;
   const on = () => {
     if (LANG !== 'ru') { const a = document.getElementById('rotateTx'), b = document.getElementById('rotateSub'); if (a) a.textContent = 'Rotate your phone to landscape'; if (b) b.textContent = 'The game is made for a landscape screen'; }
-    if (mq.matches) Bus.emit('sdkPause');
+    Bus.emit(mq.matches ? 'sdkPause' : 'sdkResume');
   };
   mq.addEventListener ? mq.addEventListener('change', on) : mq.addListener(on);
   setTimeout(on, 1500);
